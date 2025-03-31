@@ -13,74 +13,100 @@ Next step here, I wanted to enumerate any potential sub directories this site ma
 
  After running Gobuster (a popular directory and subdomain enumeration tool), I was able to find a hidden directory '/app'.
 
+![Toad'sWebsite](Images/mKingdom/toadswebsite.png)
 
  When I browse to <victimIP>:85/app, I am greeted with a new webpage titled 'Toad's' Website. Here there is many interesting points to look through such as a contact form and a blog page. The most interesting part of this page to me is the login page for the admin portal.
 
+![LoginPage](Images/mKingdom/loginpage.png)
 
  Here I was prompted to enter a username and password to access the admin portal. I first started attempting default/generic credentials for login pages and to my luck, it worked with admin:password.
+
+ ![adminportal](Images/mKingdom/adminportal.png)
 
  Now that I have access to the admin portal, I started looking around for potential points to move further into this machine. Looking at the vendor version of this website, I can see that its running on concrete5 CMS.
 I started searching for potential exploits that can be used against this vendor to potentially get a shell on the backend server. This is where I found https://hackerone.com/reports/768322 which describes you can get a PHP reverse shell by abusing the file upload section of the admin portal.
 
+![fileExtpage](Images/mKingdom/fileext.png)
+
  The first step was to allow-list .php files when being uploaded. The next step was to craft the PHP reverse shell payload. For this I used the online tool revshells.com to create a PHP pentest monkey reverse shell. 
+
+ ![RevShellsPHP](Images/mKingdom/phprevshell.png)
 
  I copied this code into shell.php and then started a netcat listener on the same port which was 4444.
 
+ ![FileUploadPage](Images/mKingdom/fileupload.png)
+
  The next step was to upload the PHP file to the site via the upload file feature and then execute the file via the URL supplied. After this I successfully received a connection from the server back to my netcat listener.
 
-
+![NetcatListener](Images/mKingdom/nc4444.png)
  
 The first thing I do when I get a shell is stabilize the connection using 'python -c 'import pty; pty.spawn("/bin/bash")'' to spawn a bash shell.
 
 After searching around the machine, I found some interesting information located in a database file under the websites config. '/var/www/html/app/castle/application/config$'
 
+![ToadCreds](Images/mKingdom/toadcred.png)
+
  I was able to what looks to be credentials for the user toad.
 
- 
+ ![Toadsignin](Images/mKingdom/toadsignin.png)
 
 Success!
 However searching in the /home directory for Toad, we cannot see the user.txt file. This means this must be located on the other user 'mario' instead. 
 
-
+![env](Images/mKingdom/pwdtoken.png)
  
-
 Looking inside the environments section, we see an unusual encoded token titled 'PWD_token'. Decoding it, we receive 'ikaTeNTANtES', which could potentially be the password for the user mario.
 
- 
+ ![mariosignin](Images/mKingdom/mariosignin.png)
 
 Success!
 However when trying to cat the user.txt I receive 'permission denied' and when looking at the permissions for the file, it is owned by root?!
 No matter! we will just have to get root privileges.
 
-
+![pspyhint](Images/mKingdom/pspyhint.png)
 
  
 Going back to Toads /home directory, we see a smb.txt file. After catting this file out we receive the above image. This took me awhile but I was able to determine this was a hint to use the tool pspy, a process monitoring tool.
 
+![usingpspy](Images/mKingdom/suscronjob.png)
 
  After executing pspy, we see an unusual process which looks to pull a bash script from mkingdom.th, execute it, and save the outcome in /var/log
 
+![ls-letchost](Images/mKingdom/ls-lhosts.png)
 
 To our advantage, /etc/hosts file is writable to by mario, the account we have access to. With this our goal is to change the IP related to mkingdom.thm to our attacking machine. With this we may be able to mimic counter.sh on our system but instead, it contains code for a bash reverse shell, hoping we can get root level privileges.
 
-First, I create a backup of /etc/hosts incase of any mistakes I can alwayy revert back to the original. 
+![hostbak](Images/mKingdom/hostsbak.png)
+
+First, I create a backup of /etc/hosts incase of any mistakes I can always revert back to the original. 
+
+![nanoreplacehosts](Images/mKingdom/nanoreplacehosts.png)
 
  Due to the shell I had on the victim machine, I found it hard to navigate the text editor to change the IP address so I took a different aproach and copied the /etc/hosts details to a file on my attacking machine. Here I created a file called 'replace_hosts'.
  
+![downloadreplacehosts](Images/mKingdom/downloadreplacehosts.png)
+
 
 I then started a HTTP server on my attacking machine and placed 'replace_hosts' in the root directory for easy access. I can then use wget to save the file to the victim machine.
 
+![catreplacehosts](Images/mKingdom/catreplacehosts.png)
 
  once the file is on the victim sever, I can use cat replace_hosts > /etc/hosts to overwrite /etc/hosts with the contents on replace_hosts. Meaning, my attacking IP is now the IP for mkingdom.thm
 
+![bashrevshell](Images/mKingdom/bashrevshell.png)
 
 Next step is to create a bash reverse shell that will be executed on the victim server through counter.sh. I used revshells.com to create a generic bash shell on port 1337. Here i also started a netcat listener on my machine. 
 
+![mkdir](Images/mKingdom/mkdir-p.png)
 
  As the bash script is located from a specific directory path, we need to mimic this on the attacking machine. I used mkdir -p to create the file path specified in the process and then saved the new counter.sh in the application directory.
 
+![pyhttpserver](Images/mKingdom/pyhttpserver.png)
+
 
 The final step is to create a HTTP server over port 85 so the process can communicate with the file on our host. As I placed the directory path in the /tmp folder, I need to specifiy the starting directory for this HTTP server using --directory.
+
+![rootaccess](Images/mKingdom/rootproof.png)
 
  As this is an automated process, all we need to do now is wait for the process to run again and make a connection to the file on our machine. We should see a HTTP 200 request from our HTTP server and shortly after a shell should spawn from our NetCat listener on port 1337.
 
