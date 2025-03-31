@@ -91,9 +91,10 @@ First, I create a backup of /etc/hosts incase of any mistakes I can always rever
 
 I then started a HTTP server on my attacking machine and placed 'replace_hosts' in the root directory for easy access. I can then use wget to save the file to the victim machine.
 
-![catreplacehosts](Images/mKingdom/catreplacehosts.png)
+![catreplacehosts](Images/mKingdom/catreplacehostsetchosts.png)
 
- once the file is on the victim sever, I can use cat replace_hosts > /etc/hosts to overwrite /etc/hosts with the contents on replace_hosts. Meaning, my attacking IP is now the IP for mkingdom.thm
+ 
+ once the file is on the victim sever, I can use cat replace_hosts > /etc/hosts to overwrite /etc/hosts with the contents on replace_hosts. Meaning, my attacking IP is now the IP for mkingdom.thm
 
 ![bashrevshell](Images/mKingdom/bashrevshell.png)
 
