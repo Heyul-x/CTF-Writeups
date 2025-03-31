@@ -56,6 +56,7 @@ However searching in the /home directory for Toad, we cannot see the user.txt fi
 
 ![env](Images/mKingdom/pwdtoken.png)
  
+
 Looking inside the environments section, we see an unusual encoded token titled 'PWD_token'. Decoding it, we receive 'ikaTeNTANtES', which could potentially be the password for the user mario.
 
  ![mariosignin](Images/mKingdom/mariosignin.png)
