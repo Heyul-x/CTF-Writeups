@@ -1,7 +1,10 @@
 First I ran the namp command nmap -T4 -sCV -p- 10.10.201.34 initially to see what ports are open on this host.
+
 ![Nmap Scan](Images/mKingdom/nmapscan.png)
 
 We can see that only 1 port is open on this host, and that being HTTP over port 85.
+
+![InitialWebPage](Images/mKingdom/bowserwebpage.png)
 
  When we browse to the victim IP + port 85, we are greeted with this webpage. Looking around, there is nothing to interact within this page and checking the page source brings back nothing.
 Next step here, I wanted to enumerate any potential sub directories this site may have that could lead to other webpages.
