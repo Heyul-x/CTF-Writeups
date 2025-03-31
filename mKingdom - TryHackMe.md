@@ -40,6 +40,7 @@ I started searching for potential exploits that can be used against this vendor 
 
 ![NetcatListener](Images/mKingdom/nc4444.png)
  
+
 The first thing I do when I get a shell is stabilize the connection using 'python -c 'import pty; pty.spawn("/bin/bash")'' to spawn a bash shell.
 
 After searching around the machine, I found some interesting information located in a database file under the websites config. '/var/www/html/app/castle/application/config$'
