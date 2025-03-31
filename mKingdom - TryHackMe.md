@@ -9,7 +9,8 @@ We can see that only 1 port is open on this host, and that being HTTP over port 
  When we browse to the victim IP + port 85, we are greeted with this webpage. Looking around, there is nothing to interact within this page and checking the page source brings back nothing.
 Next step here, I wanted to enumerate any potential sub directories this site may have that could lead to other webpages.
 
- 
+![GobusterScan](Images/mKingdom/gobuster.png)
+
  After running Gobuster (a popular directory and subdomain enumeration tool), I was able to find a hidden directory '/app'.
 
 
